@@ -1,0 +1,15 @@
+config ARCH_NEXELL
+	bool
+	default y
+
+config PLAT_NXP2120
+	bool
+	default y
+
+# NXP2120 Macchine support
+
+config MACH_WEBCON
+       bool "WEBCON"
+	   depends on ARCH_NXP2120
+	help
+	  Machine support for the FALINUX WEBCON
