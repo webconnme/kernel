@@ -18,11 +18,11 @@ static struct mtd_partition partition_map[] = {
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 3 * SZ_1M,
 	}, {
-		.name		= "kernel env",
+		.name		= "env kernel",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 8 * SZ_1M,
 	}, {
-		.name		= "Ramdisk",
+		.name		= "env Ramdisk",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 32 * SZ_1M,
 	}, {
