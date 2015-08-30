@@ -26,6 +26,7 @@
 /* nexell soc headers */
 #include <mach/platform.h>
 #include <mach/map_desc.h>
+#include <mach/system.h>	
 
 extern void             cpu_base_init(void);
 extern void __init 		cpu_init_irq(void);
@@ -36,10 +37,9 @@ extern void __init 		cpu_device(void);
 extern void 	 		board_init(void);		
 extern void __init 		board_device(void);
 
-
 #define TRACE_LINE   early_print(">>TRACE %s:%d\n", __FUNCTION__,__LINE__ );
 
-#define DEBUG 1
+// #define DEBUG 1
 
 void	webcon_fixup(struct tag *tag, char **cmdline, struct meminfo *meminfo){
 	
@@ -151,7 +151,16 @@ void	webcon_init_machine(void){
 }	
 
 void	webcon_init_late(void){TRACE_LINE}
-void	webcon_restart(char mode, const char *cmd){TRACE_LINE}
+void	webcon_restart(char mode, const char *cmd){
+#ifdef DEBUG
+
+	printk(">>TRACE %s:%d\n", __FUNCTION__,__LINE__ );
+	
+#endif // DEBUG
+	
+	arch_reset(mode,cmd);
+	
+}
 
 MACHINE_START(WEBCON, "WEBCON")
 	.atag_offset = 0x100,
