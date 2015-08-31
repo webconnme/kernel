@@ -4,16 +4,16 @@ static struct mtd_partition partition_map[] = {
 	{
 		.name		= "uboot",
 		.offset		= 0,
-		.size	    = SZ_512K,
+		.size	    = 3 * SZ_256K,
 	}, {
 		.name		= "uboot env",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = SZ_256K,
-	}, {
+/*	}, {
 		.name		= "dtb",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = SZ_256K,
-	}, {
+*/	}, {
 		.name		= "ext",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 3 * SZ_1M,
