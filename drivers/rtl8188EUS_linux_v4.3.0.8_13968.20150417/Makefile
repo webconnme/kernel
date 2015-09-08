@@ -782,7 +782,7 @@ EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
 #EXTRA_CFLAGS += -DCONFIG_P2P_IPS
 ARCH := arm
 CROSS_COMPILE := arm-generic-linux-gnueabi-
-KSRC ?=/work 
+KSRC ?=/work/build 
 endif
 
 
