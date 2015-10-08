@@ -88,6 +88,8 @@ static void bugfix(void *org_buf, void *new_buf, int length)
 	char *p1, *p2;
 	u32 last_buffer_val = 0;
 
+//	printk("%s: bugfix(%p, 0x%x) %d\n", __func__, org_buf, new_buf, length);
+	
 	memcpy(new_buf, org_buf, length);
 	org_word_buf = (u32 *)org_buf + (length-1)/4;
 	new_word_buf = (u32 *)new_buf + (length-1)/4;
@@ -125,15 +127,15 @@ qtd_fill_bugfix(struct ehci_hcd *ehci, struct ehci_qtd *qtd, u8 *virbuf, dma_add
 
 	struct urb *urb = qtd->urb;
 	qtd->bugfix_num  = 0;
-	if (usb_urb_dir_out(urb) && urb->transfer_buffer_length > 0) {
+	if ( usb_urb_dir_out(urb) && urb->transfer_buffer_length > 0 ){
 	//if (usb_urb_dir_out(urb) && (urb->transfer_buffer_length > 0) && !strncmp(urb->dev->manufacturer, "Ralink",6)) {
 		void *vbuf;
 		dma_addr_t dma_addr;
 		u32 next_bugfix_len = 0;
 		size_t copyed = 0;
 
-		//printk("%s: bugfix(%p, 0x%x) %d\n", __func__, virbuf, buf, len);
-		//printk("%s: bugfix %p\n", __func__, qtd);
+//		printk("%s: qtd_fill_bugfix(%p, 0x%x) %d\n", __func__, virbuf, buf, len);
+//		printk("%s: bugfix %p\n", __func__, qtd);
 
 		vbuf = get_bugfix_buffer(ehci, &dma_addr);
 
@@ -842,10 +844,12 @@ qh_urb_transaction (
 		 * size of the scatterlist (or vice versa)
 		 */
 		this_sg_len = min_t(int, sg_dma_len(sg), len);
+//		printk( "CASE 1 : sg = %08X, buf = %08X, this_sg_len = %d\n",  sg, buf, this_sg_len );
 	} else {
 		sg = NULL;
 		buf = urb->transfer_dma;
 		this_sg_len = len;
+//		printk( "CASE 2 : sg = NULL, buf = %08X, this_sg_len = %d\n",  buf, this_sg_len );
 	}
 
 	if (is_input)
@@ -857,6 +861,8 @@ qh_urb_transaction (
 #ifdef CONFIG_NXP2120_USB_BUGFIX
 	virbuf = urb->transfer_buffer;
 #endif
+
+//    printk("qh_urb_transaction() : urb->transfer_buffer = %08X\n", urb->transfer_buffer );
 	
 	/*
 	 * buffer gets wrapped in one or more qtds;
@@ -869,8 +875,12 @@ qh_urb_transaction (
 //		this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token,	maxpacket);
 
 #ifdef CONFIG_NXP2120_USB_BUGFIX
-		this_qtd_len = qtd_fill_bugfix(ehci, qtd, virbuf, buf, this_sg_len, token, maxpacket);
-		virbuf += this_qtd_len;
+        if( urb->transfer_buffer ){
+		    this_qtd_len = qtd_fill_bugfix(ehci, qtd, virbuf, buf, this_sg_len, token, maxpacket);
+			virbuf += this_qtd_len;
+		} else {
+			this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token, maxpacket); 
+        }			
 #else
 		this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token, maxpacket);
 #endif		
