@@ -42,6 +42,200 @@
 
 /* fill a qtd, returning how much of the buffer we were able to queue up */
 
+// psw0523 add
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+static void *get_bugfix_buffer(struct ehci_hcd *ehci, dma_addr_t *dma_addr)
+{
+	int i;
+	struct nxp2120_usb_bugfix *bugfix = ehci->nxp2120_bugfix;
+	u8 *bitmap = bugfix->free_buffer_bitmap;
+	for(i = 0; i < USB_BUGFIX_CHUNK_NUM; i++) {
+		if (bitmap[i] == 0) {
+			*dma_addr = bugfix->free_buffer_dma + i*USB_BUGFIX_CHUNK_SIZE;
+			bitmap[i] = 1;
+			//printk("=> get 0x%x, index %d\n", *dma_addr, i);
+			return bugfix->free_buffers + i*USB_BUGFIX_CHUNK_SIZE;
+		}
+	}
+
+	//BUG();
+	printk("%s failed: return NULL\n", __func__);
+	return NULL;
+}
+
+static void put_bugfix_buffer(struct ehci_hcd *ehci, dma_addr_t dma_addr)
+{
+	u8 *bitmap = ehci->nxp2120_bugfix->free_buffer_bitmap;
+	int i = (dma_addr - ehci->nxp2120_bugfix->free_buffer_dma)/USB_BUGFIX_CHUNK_SIZE;
+	
+	//printk("<= put 0x%x, index %d\n", dma_addr, i);
+#if 0
+	if (i >= USB_BUGFIX_CHUNK_NUM || !bitmap[i]) 
+		BUG();
+#else
+	if (i >= USB_BUGFIX_CHUNK_NUM) {
+		printk("%s: %d is invalid(max: %d)\n", __func__, i, USB_BUGFIX_CHUNK_NUM);
+		return;
+	}
+#endif
+
+	bitmap[i] = 0;
+}
+
+static void bugfix(void *org_buf, void *new_buf, int length)
+{
+	u32 *org_word_buf, *new_word_buf;
+	char *p1, *p2;
+	u32 last_buffer_val = 0;
+
+	memcpy(new_buf, org_buf, length);
+	org_word_buf = (u32 *)org_buf + (length-1)/4;
+	new_word_buf = (u32 *)new_buf + (length-1)/4;
+	p1 = (char *)org_word_buf;
+	p2 = (char *)new_word_buf;
+	*new_word_buf = 0;
+	switch(length%4) {
+		case 0:
+			p2[3] = p1[3];
+		case 3:
+			p2[2] = p1[2];
+		case 2:
+			p2[1] = p1[1];
+		case 1:
+			p2[0] = p1[0];
+			break;
+	}
+	last_buffer_val = *new_word_buf;
+
+	//printk("%s: org(%p), new(%p), len(%d), org_last_val(0x%x), last_val(0x%x)\n", __func__, org_buf, new_buf, length, *org_word_buf, last_buffer_val);
+	new_word_buf++;
+	*new_word_buf = last_buffer_val;
+	new_word_buf++;
+	*new_word_buf = last_buffer_val;
+	new_word_buf++;
+	*new_word_buf = last_buffer_val;
+}
+
+static int
+qtd_fill_bugfix(struct ehci_hcd *ehci, struct ehci_qtd *qtd, u8 *virbuf, dma_addr_t buf,
+		  size_t len, int token, int maxpacket)
+{
+	int	i, count;
+	u64	addr = buf;
+
+	struct urb *urb = qtd->urb;
+	qtd->bugfix_num  = 0;
+	if (usb_urb_dir_out(urb) && urb->transfer_buffer_length > 0) {
+	//if (usb_urb_dir_out(urb) && (urb->transfer_buffer_length > 0) && !strncmp(urb->dev->manufacturer, "Ralink",6)) {
+		void *vbuf;
+		dma_addr_t dma_addr;
+		u32 next_bugfix_len = 0;
+		size_t copyed = 0;
+
+		//printk("%s: bugfix(%p, 0x%x) %d\n", __func__, virbuf, buf, len);
+		//printk("%s: bugfix %p\n", __func__, qtd);
+
+		vbuf = get_bugfix_buffer(ehci, &dma_addr);
+
+		//count = 0x1000 - (buf & 0x0fff);	/* rest of that page */
+		count = 0x1000;
+		if (likely (len < count)) {
+			count = len;
+			bugfix(virbuf, vbuf, count);
+			addr = dma_addr;
+			qtd->hw_buf[0] = cpu_to_hc32(ehci, (u32)addr);
+			qtd->hw_buf_hi[0] = cpu_to_hc32(ehci, (u32)(addr >> 32));
+			qtd->hw_buf_hi[0] = 0;
+			qtd->bugfix_num = 1;
+		} else {
+			bugfix(virbuf, vbuf, 0x1000);
+			copyed += 0x1000;
+			addr = dma_addr;
+			qtd->hw_buf[0] = cpu_to_hc32(ehci, (u32)addr);
+			qtd->hw_buf_hi[0] = cpu_to_hc32(ehci, (u32)(addr >> 32));
+			qtd->hw_buf_hi[0] = 0;
+			qtd->bugfix_num = 1;
+
+			buf +=  0x1000;
+			buf &= ~0x0fff;
+			virbuf += 0x1000;
+
+			/* per-qtd limit: from 16K to 20K (best alignment) */
+			for (i = 1; count < len && i < 5; i++) {
+				vbuf = get_bugfix_buffer(ehci, &dma_addr);
+				next_bugfix_len = (len - copyed) >= 0x1000 ? 0x1000 : len - copyed;
+				bugfix(virbuf, vbuf, next_bugfix_len);
+				copyed += next_bugfix_len;;
+				qtd->bugfix_num++;
+				addr = dma_addr;
+				qtd->hw_buf[i] = cpu_to_hc32(ehci, (u32)addr);
+				//qtd->hw_buf_hi[i] = cpu_to_hc32(ehci, (u32)(addr >> 32));
+				qtd->hw_buf_hi[i] = 0;
+
+				buf += 0x1000;
+				virbuf += 0x1000;
+				if ((count + 0x1000) < len) {
+					count += 0x1000;
+				} else {
+					count = len;
+				}
+			}
+
+			/* short packets may only terminate transfers */
+			if (count != len)
+				count -= (count % maxpacket);
+		}
+	} else {
+		qtd->hw_buf[0] = cpu_to_hc32(ehci, (u32)addr);
+		qtd->hw_buf_hi[0] = cpu_to_hc32(ehci, (u32)(addr >> 32));
+		count = 0x1000 - (buf & 0x0fff);	/* rest of that page */
+		if (likely (len < count))		/* ... iff needed */
+			count = len;
+		else {
+			buf +=  0x1000;
+			buf &= ~0x0fff;
+
+			/* per-qtd limit: from 16K to 20K (best alignment) */
+			for (i = 1; count < len && i < 5; i++) {
+				addr = buf;
+				qtd->hw_buf[i] = cpu_to_hc32(ehci, (u32)addr);
+				qtd->hw_buf_hi[i] = cpu_to_hc32(ehci,
+						(u32)(addr >> 32));
+				buf += 0x1000;
+				if ((count + 0x1000) < len)
+					count += 0x1000;
+				else
+					count = len;
+			}
+
+			/* short packets may only terminate transfers */
+			if (count != len)
+				count -= (count % maxpacket);
+		}
+	}
+
+	qtd->hw_token = cpu_to_hc32(ehci, (count << 16) | token);
+	qtd->length = count;
+
+	return count;
+}
+
+void free_bugfix(struct ehci_hcd *ehci, struct ehci_qtd *qtd)
+{
+	if (qtd->bugfix_num > 0) {
+		int i;
+		dma_addr_t addr;
+		//printk("%s: free  %p\n", __func__, qtd);
+		for (i = 0; i < qtd->bugfix_num; i++) {
+			addr = hc32_to_cpu(ehci, qtd->hw_buf[i]);
+			put_bugfix_buffer(ehci, addr);
+		}
+		qtd->bugfix_num = 0;
+	}
+}
+#endif
+
+
 static int
 qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd *qtd, dma_addr_t buf,
 		  size_t len, int token, int maxpacket)
@@ -596,6 +790,10 @@ qh_urb_transaction (
 	int			i;
 	struct scatterlist	*sg;
 
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	u8 *virbuf;
+#endif
+	
 	/*
 	 * URBs map to sequences of QTDs:  one logical transaction
 	 */
@@ -656,6 +854,10 @@ qh_urb_transaction (
 
 	maxpacket = max_packet(usb_maxpacket(urb->dev, urb->pipe, !is_input));
 
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	virbuf = urb->transfer_buffer;
+#endif
+	
 	/*
 	 * buffer gets wrapped in one or more qtds;
 	 * last one may be "short" (including zero len)
@@ -664,8 +866,15 @@ qh_urb_transaction (
 	for (;;) {
 		int this_qtd_len;
 
-		this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token,
-				maxpacket);
+//		this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token,	maxpacket);
+
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+		this_qtd_len = qtd_fill_bugfix(ehci, qtd, virbuf, buf, this_sg_len, token, maxpacket);
+		virbuf += this_qtd_len;
+#else
+		this_qtd_len = qtd_fill(ehci, qtd, buf, this_sg_len, token, maxpacket);
+#endif		
+
 		this_sg_len -= this_qtd_len;
 		len -= this_qtd_len;
 		buf += this_qtd_len;

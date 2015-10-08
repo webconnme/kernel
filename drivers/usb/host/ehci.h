@@ -66,6 +66,19 @@ struct ehci_stats {
 
 #define	EHCI_MAX_ROOT_PORTS	15		/* see HCS_N_PORTS */
 
+/* swpark add for nxp2120 usb host bug */
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+
+#define USB_BUGFIX_CHUNK_SIZE					 (8192) // 8K
+#define USB_BUGFIX_CHUNK_NUM					 (64)
+#define USB_BUGFIX_TOTAL_BUF_SIZE			 (USB_BUGFIX_CHUNK_SIZE*USB_BUGFIX_CHUNK_NUM) // 512KB
+struct nxp2120_usb_bugfix {
+	void *free_buffers;
+	dma_addr_t free_buffer_dma;
+	u8 free_buffer_bitmap[USB_BUGFIX_CHUNK_NUM];
+};
+#endif
+
 /*
  * ehci_rh_state values of EHCI_RH_RUNNING or above mean that the
  * controller may be doing DMA.  Lower values mean there's no DMA.
@@ -227,6 +240,11 @@ struct ehci_hcd {			/* one per controller */
 	struct dentry		*debug_dir;
 #endif
 
+	/* swpark add for nxp2120 usb host bug */
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	struct nxp2120_usb_bugfix *nxp2120_bugfix;
+#endif
+
 	/* platform-specific data -- must come last */
 	unsigned long		priv[0] __aligned(sizeof(s64));
 };
@@ -288,6 +306,9 @@ struct ehci_qtd {
 	struct list_head	qtd_list;		/* sw qtd list */
 	struct urb		*urb;			/* qtd's urb */
 	size_t			length;			/* length of buffer */
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	u32 bugfix_num;
+#endif	
 } __attribute__ ((aligned (32)));
 
 /* mask NakCnt+T in qh->hw_alt_next */

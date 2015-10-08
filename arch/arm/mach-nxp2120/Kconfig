@@ -8,8 +8,18 @@ config PLAT_NXP2120
 
 # NXP2120 Macchine support
 
+config NXP2120_USB_BUGFIX
+	bool "Use nxp2120 usb host bugfix code"
+	depends on USB_SUPPORT
+	default y
+	help
+		check if use nxp2120 usb host bugfix code in usb ehci host driver
+
 config MACH_WEBCON
        bool "WEBCON"
 	   depends on ARCH_NXP2120
 	help
 	  Machine support for the FALINUX WEBCON
+
+
+	  

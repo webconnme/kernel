@@ -645,6 +645,20 @@ static int ehci_run (struct usb_hcd *hcd)
 	 */
 	create_debug_files(ehci);
 	create_sysfs_files(ehci);
+	
+
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	ehci->nxp2120_bugfix = (struct nxp2120_usb_bugfix *)kmalloc(sizeof(struct nxp2120_usb_bugfix), GFP_KERNEL);
+	ehci->nxp2120_bugfix->free_buffers = hcd_buffer_alloc(hcd_to_bus(hcd), USB_BUGFIX_TOTAL_BUF_SIZE, GFP_ATOMIC, &ehci->nxp2120_bugfix->free_buffer_dma);
+	if (!ehci->nxp2120_bugfix->free_buffers) {
+		printk("%s error\n", __func__);
+		BUG();
+	} else {
+		memset(ehci->nxp2120_bugfix->free_buffer_bitmap, 0, USB_BUGFIX_CHUNK_NUM);
+		printk("%s: Alloc nxp2120 bugfix buffer(%p, 0x%x)\n", 
+				__func__, ehci->nxp2120_bugfix->free_buffers, ehci->nxp2120_bugfix->free_buffer_dma);
+	}
+#endif	
 
 	return 0;
 }

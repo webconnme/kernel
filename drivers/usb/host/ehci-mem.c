@@ -58,11 +58,21 @@ static struct ehci_qtd *ehci_qtd_alloc (struct ehci_hcd *ehci, gfp_t flags)
 	return qtd;
 }
 
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+extern void free_bugfix(struct ehci_hcd *ehci, struct ehci_qtd *qtd);
+#endif
 static inline void ehci_qtd_free (struct ehci_hcd *ehci, struct ehci_qtd *qtd)
 {
+#ifdef CONFIG_NXP2120_USB_BUGFIX
+	free_bugfix(ehci, qtd);
+#endif
 	dma_pool_free (ehci->qtd_pool, qtd, qtd->qtd_dma);
 }
 
+// static inline void ehci_qtd_free (struct ehci_hcd *ehci, struct ehci_qtd *qtd)
+// {
+// 	dma_pool_free (ehci->qtd_pool, qtd, qtd->qtd_dma);
+// }
 
 static void qh_destroy(struct ehci_hcd *ehci, struct ehci_qh *qh)
 {
