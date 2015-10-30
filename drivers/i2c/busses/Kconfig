@@ -728,6 +728,23 @@ config I2C_VERSATILE
 	  This driver can also be built as a module.  If so, the module
 	  will be called i2c-versatile.
 
+#add nexel i2c by larche
+config I2C_NEXELL
+	tristate "Nexell I2C (NX series)"
+	depends on ARCH_NEXELL
+	help
+	  Support for NX series processor's I2C driver.
+
+config I2C_NEXELL_PORT0
+	bool "Nexell I2C port 0"
+	depends on I2C_NEXELL
+		default y
+
+config I2C_NEXELL_PORT1
+	bool "Nexell I2C port 1"
+	depends on I2C_NEXELL
+		default n
+
 config I2C_OCTEON
 	tristate "Cavium OCTEON I2C bus support"
 	depends on CPU_CAVIUM_OCTEON

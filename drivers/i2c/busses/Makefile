@@ -92,4 +92,7 @@ obj-$(CONFIG_I2C_SIBYTE)	+= i2c-sibyte.o
 obj-$(CONFIG_SCx200_ACB)	+= scx200_acb.o
 obj-$(CONFIG_SCx200_I2C)	+= scx200_i2c.o
 
+# Add larche
+obj-$(CONFIG_I2C_NEXELL)  += i2c-nexell.o
+
 ccflags-$(CONFIG_I2C_DEBUG_BUS) := -DDEBUG
