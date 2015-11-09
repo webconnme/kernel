@@ -4,43 +4,23 @@ static struct mtd_partition partition_map[] = {
 	{
 		.name		= "uboot",
 		.offset		= 0,
-		.size	    = 3 * SZ_256K,
+		.size	    = 2 * SZ_1M,
 	}, {
-		.name		= "uboot env",
-		.offset		= MTDPART_OFS_APPEND,
-		.size	    = SZ_256K,
-/*	}, {
-		.name		= "dtb",
-		.offset		= MTDPART_OFS_APPEND,
-		.size	    = SZ_256K,
-*/	}, {
-		.name		= "ext",
-		.offset		= MTDPART_OFS_APPEND,
-		.size	    = 3 * SZ_1M,
-	}, {
-		.name		= "env kernel",
+		.name		= "kernel",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 8 * SZ_1M,
 	}, {
-		.name		= "env Ramdisk",
+		.name		= "Ramdisk",
+		.offset		= MTDPART_OFS_APPEND,
+		.size	    = 16 * SZ_1M,
+	}, {
+		.name		= "App",
 		.offset		= MTDPART_OFS_APPEND,
 		.size	    = 32 * SZ_1M,
 	}, {
-		.name		= "config data",
-		.offset		= MTDPART_OFS_APPEND,
-		.size	    = 12 * SZ_1M,
-	}, {
 		.name		= "user data",
 		.offset		= MTDPART_OFS_APPEND,
-		.size	    = 192 * SZ_1M,
-	}, {
-		.name 		= "app kernel",
-		.offset		= MTDPART_OFS_APPEND,
-		.size	    = 8 * SZ_1M,
-	}, {
-		.name		= "app rootfs",
-		.offset		= MTDPART_OFS_APPEND,
-		.size		= MTDPART_SIZ_FULL,
+		.size	    = 6 * SZ_1M,
 	},
 };
 
