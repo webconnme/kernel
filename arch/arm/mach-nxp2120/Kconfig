@@ -22,4 +22,11 @@ config MACH_WEBCON
 	  Machine support for the FALINUX WEBCON
 
 
-	  
+comment "NXP2120 Add features"
+
+config HAVE_PWM
+	prompt "Support pwm device"
+	bool
+	default y
+
+

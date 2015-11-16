@@ -1,0 +1,48 @@
+#
+# Copyright 2010 Nexell.
+#
+# Configuration options for the Nexell misc drivers
+
+config MISC_NEXELL_ADC
+	bool "Nexell ADC (Analog to Digital Converter) driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_PWM
+	bool "Nexell PWM (Pulse Width Modulation) driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_PMI
+	bool "Nexell PMI (Power Manager Interface) driver"
+	depends on MISC_NEXELL && PM
+
+config MISC_NEXELL_SPI
+	bool "Nexell SPI (Serial Peripheral Interface) driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_GPIO
+	bool "Nexell GPIO (General Purpose IO) driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_DIBDXB
+	bool "Nexell DiBcom DXB(I2C) driver"
+	depends on MISC_NEXELL
+	
+config MISC_NEXELL_TIMER_90K
+	bool "Nexell 90 Khz timer driver"
+	depends on MISC_NEXELL && PLAT_NXP2120_PR
+
+config MISC_NEXELL_MPEGTS
+	bool "Nexell mpegtsif driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_GPIOMON
+	bool "Nexell gpio monitor driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_VSTATION
+	bool "Nexell vstation driver"
+	depends on MISC_NEXELL
+
+config MISC_NEXELL_BUZZER
+	bool "Nexell Buzzer driver"
+	depends on MISC_NEXELL

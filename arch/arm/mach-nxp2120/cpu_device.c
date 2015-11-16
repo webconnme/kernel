@@ -119,6 +119,7 @@ struct platform_device ehci_plat_device = {
  */
 #if defined(CONFIG_USB_OHCI_HCD) ||	defined(CONFIG_USB_OHCI_HCD_MODULE)
 
+#if 0
 static struct resource ohci_resources[] = {
 	[0] = {
 		.start  = PHY_BASEADDR_OHCI,
@@ -144,6 +145,28 @@ static struct platform_device ohci_plat_device = {
 	.num_resources  = ARRAY_SIZE(ohci_resources),
 	.resource       = ohci_resources,
 };
+#else
+static struct resource ohci_resources[] = {
+	[0] = DEFINE_RES_MEM(PHY_BASEADDR_OHCI, SZ_1K),
+	[1] = DEFINE_RES_IRQ(IRQ_PHY_OHCI),
+};
+
+static u64 ohci_dmamask = 0xffffffffUL;
+
+struct platform_device ohci_plat_device = {
+	.name		= OHCI_DEV_NAME,
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(ohci_resources),
+	.resource	= ohci_resources,
+	.dev		= {
+		.dma_mask		=  &ohci_dmamask,
+		.coherent_dma_mask	= DMA_BIT_MASK(32),
+	}
+};
+
+
+#endif
+
 
 #endif	/* CONFIG_USB_OHCI_HCD || CONFIG_USB_OHCI_HCD_MODULE */
 

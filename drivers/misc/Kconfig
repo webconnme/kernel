@@ -527,6 +527,14 @@ config SRAM
 	  the genalloc API. It is supposed to be used for small on-chip SRAM
 	  areas found on many SoCs.
 
+config MISC_NEXELL
+	bool "Nexell MISC device driver"
+	depends on ARCH_NEXELL
+	---help---
+	  This option enables device driver support for Nexell misc device
+	  ex). ADC, PWM, GPIO ...
+
+source "drivers/misc/nexell/Kconfig"
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
@@ -537,3 +545,5 @@ source "drivers/misc/altera-stapl/Kconfig"
 source "drivers/misc/mei/Kconfig"
 source "drivers/misc/vmw_vmci/Kconfig"
 endmenu
+
+

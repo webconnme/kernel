@@ -337,6 +337,26 @@ static struct i2c_board_info lis3_i2c_boardinfo = {
 #endif
 
 /*------------------------------------------------------------------------------
+ * PCF857X I2C device
+ */
+#if defined(CONFIG_GPIO_PCF857X)
+#include <linux/i2c/pcf857x.h>
+#include <mach/nxp2120.h>
+
+#define PCF857X_I2C_BUS		0
+static struct pcf857x_platform_data pcf_platdata = {
+	.gpio_base		= PHY_BASEADDR_GPIO,
+	.n_latch		= (1<<7) | (1<<6) | (1<<5) | (1<<4) | (1<<3) | (1<<2) | (1<<1) | (1<<0),
+};
+
+static struct i2c_board_info pcf857x_i2c_boardinfo = {
+		I2C_BOARD_INFO("pcf8574", 0x20),
+		.platform_data	= &pcf_platdata,
+		.irq			= PB_PIO_IRQ(PAD_GPIO_A + 28)
+};
+#endif
+
+/*------------------------------------------------------------------------------
  * MPEGTSIF RAONTECH ISDBT Module i2c device
  */
 #if defined(CONFIG_MISC_NEXELL_MPEGTS) && defined(CONFIG_RAONTV_MTV818)
@@ -515,6 +535,11 @@ void __init board_device(void)
 #if defined(CONFIG_MISC_NEXELL_MPEGTS) && defined(CONFIG_RAONTV_MTV818)
 	printk("plat: register raontv isdbt module(MTV818)\n");
 	i2c_register_board_info(RAONTV_I2C_BUS, raontv_i2c_boardinfo, 1);
+#endif
+
+#if defined(CONFIG_GPIO_PCF857X)
+	printk("plat: register pcf857x \n");
+	i2c_register_board_info(PCF857X_I2C_BUS, &pcf857x_i2c_boardinfo, 1);
 #endif
 
 #if defined(CONFIG_VIDEO_V4L2) || defined(CONFIG_VIDEO_V4L2_MODULE)

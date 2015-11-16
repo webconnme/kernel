@@ -322,7 +322,8 @@ static void usb_hcd_nx_remove (struct usb_hcd *hcd, struct platform_device *pdev
 	usb_put_hcd(hcd);
 }
 
-static int __devinit ohci_hc_start (struct usb_hcd *hcd)
+//static int __devinit ohci_hc_start (struct usb_hcd *hcd)
+static int ohci_hc_start (struct usb_hcd *hcd)
 {
 	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);
 	int		ret;
@@ -336,7 +337,8 @@ static int __devinit ohci_hc_start (struct usb_hcd *hcd)
 		return ret;
 
 	if ((ret = ohci_run (ohci)) < 0) {
-		err ("can't start %s", hcd->self.bus_name);
+		dev_err(hcd->self.controller, "can't start %s\n",
+			hcd->self.bus_name);
 		ohci_stop (hcd);
 		return ret;
 	}
@@ -440,7 +442,7 @@ static int ohci_nx_driver_resume(struct platform_device *pdev)
 
 	start_usb_hc(&pdev->dev);
 
-	ohci_finish_controller_resume(hcd);
+//	ohci_finish_controller_resume(hcd);
 
 	PM_DBGOUT("-%s\n", __func__);
 	return 0;
