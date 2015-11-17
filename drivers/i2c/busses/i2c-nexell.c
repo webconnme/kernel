@@ -767,7 +767,7 @@ static int nx_i2c_algo_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
 	}
 
 	if (ret != len) {
-		printk(KERN_ERR "Error: i2c-%d, msg len:%d,%d, try:%d, ret:%d\n",
+		DBGOUT("Error: i2c-%d, msg len:%d,%d, try:%d, ret:%d\n",
 			i2c->hw.port, ret, len, adap->retries, ret);
 		return -1;
 	}
