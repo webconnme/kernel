@@ -717,4 +717,9 @@ config GPIO_VIPERBOARD
           River Tech's viperboard.h for detailed meaning
           of the module parameters.
 
+config GPIO_PROCFS_FALINUX
+	bool "GPIO Control ProcFS - FALINUX"
+	help
+	  Set GPIO Control ProcFS 
+
 endif
