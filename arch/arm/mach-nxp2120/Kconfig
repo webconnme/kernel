@@ -6,6 +6,17 @@ config PLAT_NXP2120
 	bool
 	default y
 
+choice
+	prompt "Prototype build mode"
+	default PROTOTYPE_NXP2120_DBG
+
+	config  PROTOTYPE_NXP2120_REL
+		bool "Release"
+
+	config  PROTOTYPE_NXP2120_DBG
+		bool "Debug"
+endchoice
+
 # NXP2120 Macchine support
 
 config NXP2120_USB_BUGFIX
@@ -24,11 +35,6 @@ config MACH_WEBCON
 source "arch/arm/mach-nxp2120/Kconfig.webconn-chip"
 
 comment "NXP2120 Add features"
-
-config HAVE_PWM
-	prompt "Support pwm device"
-	bool
-	default y
 
 config HAVE_PWM
 	prompt "Support pwm device"
