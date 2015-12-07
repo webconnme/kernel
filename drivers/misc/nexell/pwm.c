@@ -55,7 +55,7 @@ static int nx_pwm_ops_release(struct inode *inode, struct file *flip)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
 static DEFINE_MUTEX(extio_mutex);
-static int nx_pwm_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+static long nx_pwm_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #else
 static int nx_pwm_ops_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 #endif
@@ -103,13 +103,13 @@ static int nx_pwm_ops_ioctl(struct inode *inode, struct file *filp, unsigned int
 }
 
 struct file_operations nx_pwm_ops = {
-	.owner 	= THIS_MODULE,
-	.open 	= nx_pwm_ops_open,
-	.release= nx_pwm_ops_release,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36) 
-	.ioctl 	= nx_pwm_ops_ioctl,
+	.owner				= THIS_MODULE,
+	.open				= nx_pwm_ops_open,
+	.release			= nx_pwm_ops_release,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	.unlocked_ioctl		= nx_pwm_ops_ioctl,
 #else
-	.unlocked_ioctl 	= nx_pwm_ops_ioctl,
+	.ioctl				= nx_pwm_ops_ioctl,
 #endif
 };
 

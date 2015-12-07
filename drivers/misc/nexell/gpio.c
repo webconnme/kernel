@@ -30,6 +30,10 @@
 #include <mach/soc.h>
 #include <mach/gpio.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+#include <linux/mutex.h>
+#endif
+
 #if (0)
 #define DBGOUT(msg...)		{ printk(KERN_INFO "gpio: " msg); }
 #else
@@ -49,12 +53,20 @@ static int nx_gpio_ops_release(struct inode *inode, struct file *flip)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+static DEFINE_MUTEX(extio_mutex);
+static long nx_gpio_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+#else
 static int nx_gpio_ops_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+#endif
 {
 	struct gpio_info gpio;
 
 	DBGOUT("%s(cmd:0x%x)\n", __func__, cmd);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	mutex_lock(&extio_mutex);
+#endif
 	if (copy_from_user(&gpio, (const void __user *)arg, sizeof(struct gpio_info)))
 		return -EFAULT;
 
@@ -148,15 +160,22 @@ static int nx_gpio_ops_ioctl(struct inode *inode, struct file *filp, unsigned in
 		break;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	mutex_unlock(&extio_mutex);
+#endif
 	DBGOUT("IoCtl (cmd:0x%x) \n\n", cmd);
 	return 0;
 }
 
 struct file_operations nx_gpio_ops = {
-	.owner 	= THIS_MODULE,
-	.open 	= nx_gpio_ops_open,
-	.release= nx_gpio_ops_release,
-	.ioctl 	= nx_gpio_ops_ioctl,
+	.owner			= THIS_MODULE,
+	.open			= nx_gpio_ops_open,
+	.release		= nx_gpio_ops_release,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	.unlocked_ioctl = nx_gpio_ops_ioctl,
+#else
+	.ioctl			= nx_gpio_ops_ioctl,
+#endif
 };
 
 /*--------------------------------------------------------------------------------

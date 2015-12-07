@@ -20,7 +20,6 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/delay.h>
-#include <linux/mutex.h>
 #include <linux/fs.h>
 #include <linux/platform_device.h>
 #include <asm/uaccess.h>
@@ -30,6 +29,10 @@
 #include <mach/devices.h>
 #include <mach/soc.h>
 #include <mach/adc.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+#include <linux/mutex.h>
+#endif
 
 #if (0)
 #define DBGOUT(msg...)		{ printk(KERN_INFO "adc: " msg); }
@@ -54,13 +57,18 @@ static int nx_adc_ops_release(struct inode *inode, struct file *flip)
 	return 0;
 }
 
-//static int nx_adc_ops_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
 static DEFINE_MUTEX(extio_mutex);
-static int nx_adc_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+static long nx_adc_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+#else
+static int nx_adc_ops_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+#endif
 {
 	DBGOUT("%s(cmd:0x%x)\n", __func__, cmd);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
 	mutex_lock(&extio_mutex);
+#endif
 	switch (cmd)	{
 	case IOCTL_ADC_GET_LEVEL:
 		{
@@ -84,16 +92,22 @@ static int nx_adc_ops_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 		return -EINVAL;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
 	mutex_unlock(&extio_mutex);
+#endif
 	DBGOUT("IoCtl (cmd:0x%x) \n\n", cmd);
 	return 0;
 }
 
 struct file_operations nx_adc_ops = {
-	.owner 	= THIS_MODULE,
-	.open 	= nx_adc_ops_open,
-	.release= nx_adc_ops_release,
-	.unlocked_ioctl = nx_adc_ops_ioctl,
+	.owner			= THIS_MODULE,
+	.open			= nx_adc_ops_open,
+	.release		= nx_adc_ops_release,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	.unlocked_ioctl	= nx_adc_ops_ioctl,
+#else
+	.ioctl			= nx_adc_ops_ioctl,
+#endif
 };
 
 /*--------------------------------------------------------------------------------

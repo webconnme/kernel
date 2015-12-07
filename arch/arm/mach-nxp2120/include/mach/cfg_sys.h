@@ -18,7 +18,8 @@
 #ifndef __CFG_SYS_H__
 #define __CFG_SYS_H__
 
-#include <mach/nx_type.h>
+//#include <mach/nx_type.h>
+#include <nx_type.h>
 
 
 //------------------------------------------------------------------------------

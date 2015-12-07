@@ -22,6 +22,10 @@
 #include <mach/soc.h>
 #include <mach/gpiomon.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+#include <linux/mutex.h>
+#endif
+
 /* debugging macro */
 #define GPIOMON_DBG_HEADER "[GPIOMON]"
 
@@ -162,9 +166,18 @@ static int gpiomon_close(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+static DEFINE_MUTEX(extio_mutex);
+static long gpiomon_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+#else
 static int gpiomon_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+#endif
 {
 	int ret;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	mutex_lock(&extio_mutex);
+#endif
 	switch (cmd) {
 	case IOCTL_SET_MONITOR_NUM:
 		{
@@ -211,6 +224,9 @@ static int gpiomon_ioctl(struct inode *inode, struct file *filp, unsigned int cm
 		break;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	mutex_unlock(&extio_mutex);
+#endif
 	return 0;
 }
 
@@ -230,11 +246,15 @@ static ssize_t gpiomon_read(struct file *filp, char *buf, size_t count, loff_t *
 }
 
 static struct file_operations gpiomon_fops = {
-	.owner      = THIS_MODULE,
-	.open       = gpiomon_open,
-	.release    = gpiomon_close,
-	.ioctl      = gpiomon_ioctl,
-	.read       = gpiomon_read,
+	.owner			= THIS_MODULE,
+	.open			= gpiomon_open,
+	.release		= gpiomon_close,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) 
+	.unlocked_ioctl	= gpiomon_ioctl,
+#else
+	.ioctl			= gpiomon_ioctl,
+#endif
+	.read			= gpiomon_read,
 };
 
 static struct miscdevice gpiomon_misc_device = {

@@ -1,0 +1,23 @@
+#ifndef __NX_VSTATION_DEV_H__
+#define __NX_VSTATION_DEV_H__
+
+#include "ioc_magic.h"
+
+enum {
+	IOCTL_VSTATION_START_READ_CHANNEL      = _IO(IOC_NX_MAGIC,  1),
+	IOCTL_VSTATION_STOP_READ_CHANNEL       = _IO(IOC_NX_MAGIC,  2),
+	IOCTL_VSTATION_GET_READ_OFFSET	       = _IO(IOC_NX_MAGIC,  3),
+	IOCTL_VSTATION_START_WRITE_CHANNEL     = _IO(IOC_NX_MAGIC,  4),
+	IOCTL_VSTATION_STOP_WRITE_CHANNEL      = _IO(IOC_NX_MAGIC,  5),
+	IOCTL_VSTATION_SET_WRITE_OFFSET        = _IO(IOC_NX_MAGIC,  6),
+};
+
+/* predefine */
+#define SAMPLE_COUNT              1024
+#define READ_CHANNEL_CHUNKSIZE    (2*4*SAMPLE_COUNT) // 16bit * channel * sample count
+//#define READ_CHANNEL_CHUNKCOUNT   64
+#define READ_CHANNEL_CHUNKCOUNT   512 // 4M
+#define WRITE_CHANNEL_CHUNKSIZE   (2*2*SAMPLE_COUNT) // 16bit * channel(stereo) * sample count
+#define WRITE_CHANNEL_CHUNKCOUNT  64
+
+#endif

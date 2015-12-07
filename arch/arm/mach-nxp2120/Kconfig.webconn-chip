@@ -1,0 +1,110 @@
+choice
+	prompt "Webconn Module Chip Type"
+	depends on MACH_WEBCON
+	default WEBCONN_DEFAULT
+
+config WEBCONN_DEFAULT
+	bool "Webconn Default"
+	help
+		Description
+
+config WEBCONN_T_USB
+	bool "Webconn 01. T-USB"
+	help 
+
+config WEBCONN_T_SPI
+	bool "Webconn 02. T-SPI"
+	help 
+		Description
+
+config WEBCONN_T_I2C
+	bool "Webconn 03. T-I2C"
+	help 
+		Description
+
+config WEBCONN_T_UART_TTL
+	bool "Webconn 04. T-UART-TTL"
+	help 
+		Description
+
+config WEBCONN_T_AI_2CH
+	bool "Webconn 05. T-AI-2CH"
+	help 
+		Description
+
+config WEBCONN_T_PWM
+	bool "Webconn 06. T-PWM"
+	help 
+		Description
+
+config WEBCONN_T_POWER
+	bool "Webconn 07. T-POWER"
+	help 
+		Description
+
+config WEBCONN_T_GPIO_4CH
+	bool "Webconn 08. T-GPIO-4CH"
+	help 
+		Description
+
+config WEBCONN_T_ETHERNET
+	bool "Webconn 09. T-ETHERNET"
+	help 
+		Description
+
+config WEBCONN_T_RS232
+	bool "Webconn 10. T-RS232"
+	help 
+		Description
+
+config WEBCONN_T_JIG
+	bool "Webconn 11. T-JIG"
+	help 
+		Description
+
+config WEBCONN_T_SENSOR_CURRENT
+	bool "Webconn 12. T-SENSOR-CURRENT"
+	help 
+		Description
+
+config WEBCONN_T_DIGITAL_INPUT_1CH
+	bool "Webconn 13. T-DIGITAL-INPUT-1CH"
+	help 
+		Description
+
+config WEBCONN_T_DIGITAL_INPUT_8CH
+	bool "Webconn 14. T-DIGITAL-INPUT-8CH"
+	help 
+		Description
+
+config WEBCONN_T_DIGITAL_OUTPUT_1CH
+	bool "Webconn 15. T-DIGITAL-OUT-1CH"
+	help 
+		Description
+
+config WEBCONN_T_DIGITAL_OUTPUT_8CH
+	bool "Webconn 16. T-DIGITAL-OUT-8CH"
+	help 
+		Description
+
+config WEBCONN_T_RELAY_1
+	bool "Webconn 17. T-RELAY-1"
+	help 
+		Description
+
+config WEBCONN_T_USB_HUB
+	bool "Webconn 18. T-USB-HUB"
+	help 
+		Description
+
+config WEBCONN_T_RS485
+	bool "Webconn 19. T-RS485"
+	help 
+		Description
+
+config WEBCONN_T_RS422
+	bool "Webconn 20. T-RS422"
+	help 
+		Description
+
+endchoice

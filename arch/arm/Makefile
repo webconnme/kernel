@@ -238,6 +238,29 @@ KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs) $(platdirs))
 endif
 endif
 
+ifeq ($(CONFIG_ARCH_NEXELL),y)
+################################################################################
+#	Build options for prototype
+################################################################################
+KBUILD_CFLAGS += -I$(srctree)/$(MACHINE)prototype/nx_base	\
+				 -I$(srctree)/$(MACHINE)prototype/module
+
+ifeq ($(CONFIG_PROTOTYPE_NXP2120_REL),y)
+KBUILD_CFLAGS += -D__LINUX__ -D__PRINTK__ -DNX_RELEASE
+else
+KBUILD_CFLAGS += -D__LINUX__ -D__PRINTK__ -DNX_DEBUG
+endif
+
+################################################################################
+#	Build options for nexell soc
+################################################################################
+KBUILD_CFLAGS += -mfloat-abi=softfp
+
+ifeq ($(cc-version),0406)
+KBUILD_CFLAGS += -mno-unaligned-access
+endif
+endif
+
 export	TEXT_OFFSET GZFLAGS MMUEXT
 
 # Do we have FASTFPE?

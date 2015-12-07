@@ -21,6 +21,7 @@ config MACH_WEBCON
 	help
 	  Machine support for the FALINUX WEBCON
 
+source "arch/arm/mach-nxp2120/Kconfig.webconn-chip"
 
 comment "NXP2120 Add features"
 
@@ -29,4 +30,13 @@ config HAVE_PWM
 	bool
 	default y
 
+config HAVE_PWM
+	prompt "Support pwm device"
+	bool
+	default y
+
+config ARCH_REQUIRE_GPIOLIB
+	prompt "Support generic gpio library"
+	bool
+	default y
 

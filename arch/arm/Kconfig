@@ -69,6 +69,10 @@ config ARM
 	  Europe.  There is an ARM Linux project with a web page at
 	  <http://www.arm.linux.org.uk/>.
 
+config PROTOTYPE_NXP2120_REL
+	bool
+	default y
+
 config ARM_HAS_SG_CHAIN
 	bool
 
@@ -876,12 +880,12 @@ config ARCH_NXP2120
 	    select NEED_MACH_MEMORY_H
         select USB_ARCH_HAS_EHCI
         select USB_ARCH_HAS_OHCI
-		select ARCH_REQUIRE_GPIOLIB
 		select I2C
         help
           Support for Nexell's SoC platform
 	  
 endchoice
+
 
 menu "Multiple platform selection"
 	depends on ARCH_MULTIPLATFORM

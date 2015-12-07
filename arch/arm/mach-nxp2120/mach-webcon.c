@@ -150,7 +150,14 @@ void	webcon_init_machine(void){
     board_device();
 }	
 
-void	webcon_init_late(void){TRACE_LINE}
+void	webcon_init_late(void){
+
+#ifdef DEBUG
+	{TRACE_LINE}
+#endif // DEBUG
+
+}
+
 void	webcon_restart(char mode, const char *cmd){
 #ifdef DEBUG
 
